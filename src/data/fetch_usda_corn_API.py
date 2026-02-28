@@ -1,7 +1,7 @@
 """
-fetch_usda_wheat.py
+fetch_usda_corn.py
 --------------------
-Fetches spring wheat data from the USDA NASS QuickStats API for 2021–present.
+Fetches corn data from the USDA NASS QuickStats API for 2021–present.
 
 Data retrieved (both state-level and county-level):
   - Yield (BU / ACRE)
@@ -19,11 +19,11 @@ Usage:
     1. Get a free API key at: https://quickstats.nass.usda.gov/api
     2. Set your key:  export NASS_API_KEY="your_key_here"
        OR paste it directly into API_KEY below (not recommended for shared code).
-    3. Run:  python fetch_usda_wheat.py
+    3. Run:  python fetch_usda_corn.py
 
 Output:
-    wheat_state.csv   — state-level records
-    wheat_county.csv  — county-level records
+    corn_state.csv   — state-level records
+    corn_county.csv  — county-level records
 """
 
 import os
@@ -40,8 +40,8 @@ COUNT_URL       = "https://quickstats.nass.usda.gov/api/get_counts/"
 API_ROW_LIMIT   = 50_000   # NASS hard limit — requests above this will error
 BATCH_THRESHOLD = 5_000    # If a query would exceed this, batch it year-by-year
 
-COMMODITY       = "WHEAT"
-CLASS           = "SPRING, (EXCL DURUM)"
+COMMODITY       = "CORN"
+CLASS           = "ALL CLASSES"
 STAT_CATEGORIES = ["YIELD", "AREA PLANTED", "AREA HARVESTED", "PRODUCTION"]
 REF_PERIOD      = "YEAR"
 PROD_PRACT      = "ALL PRODUCTION PRACTICES"
@@ -54,7 +54,7 @@ def _base_params(stat: str, agg_level: str) -> dict:
     """Build the shared query parameters for a given stat + aggregation level."""
     return {
         "sector_desc": "CROPS",
-        "commodity_desc":COMMODITY,
+        "commodity_desc": COMMODITY,
         "class_desc": CLASS,
         "statisticcat_desc": stat,
         "reference_period_desc": REF_PERIOD,
@@ -269,7 +269,7 @@ def main():
         )
 
     print("=" * 60)
-    print("USDA NASS QuickStats — Spring Wheat Data Fetch")
+    print("USDA NASS QuickStats — Corn Data Fetch")
     print(f"Commodity  : {COMMODITY} / {CLASS}")
     print(f"Years      : {START_YEAR} – {END_YEAR}")
     print(f"Batch limit: {BATCH_THRESHOLD:,} rows per request")
@@ -287,22 +287,22 @@ def main():
                 return
 
     # ── State-level ──
-    print("[1/2] Fetching state-level data → wheat_state.csv")
-    state_total = fetch_all_to_csv("STATE", "wheat_state.csv", counts)
+    print("[1/2] Fetching state-level data → corn_state.csv")
+    state_total = fetch_all_to_csv("STATE", "corn_state.csv", counts)
     print(f"  Done. {state_total:,} total rows saved.\n")
 
     # ── County-level ──
-    print("[2/2] Fetching county-level data → wheat_county.csv")
-    county_total = fetch_all_to_csv("COUNTY", "wheat_county.csv", counts)
+    print("[2/2] Fetching county-level data → corn_county.csv")
+    county_total = fetch_all_to_csv("COUNTY", "corn_county.csv", counts)
 
-    county_df = pd.read_csv("wheat_county.csv")
+    county_df = pd.read_csv("corn_county.csv")
     suppressed = county_df["value"].isna().sum()
     print(f"  Done. {county_total:,} total rows saved.")
     print(f"  Note: {suppressed:,} suppressed county values (privacy rules) → NaN\n")
 
     print("=" * 60)
-    print(f"All done!  wheat_state.csv  ({state_total:,} rows)")
-    print(f"           wheat_county.csv ({county_total:,} rows)")
+    print(f"All done!  corn_state.csv  ({state_total:,} rows)")
+    print(f"           corn_county.csv ({county_total:,} rows)")
     print("=" * 60)
 
 
